@@ -1,31 +1,110 @@
-openapi: "3.0.0"
+openapi: '3.0.0'
 info:
-  version: "0.0.1"
-  title: "small-things-to-do api specs"
-  description: "API specifications for pet project small-things-to-do"
+  version: '0.0.1'
+  title: 'small-things-to-do api specs'
+  description: 'API specifications for pet project small-things-to-do'
 servers:
-  - url: "https://localhost:3001/api"
-    description: "Local host server for api"
-components:
-  securitySchemes:
-    # See https://demo.identityserver.io/ for configuration details.
-    identity_server_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: "https://demo.identityserver.io/connect/authorize"
-          scopes:
-            api: "api"
-security:
-  - identity_server_auth:
-    - api
-    
+  - url: 'https://localhost:3001/api'
+    description: 'Local host server for api'
+
 paths:
-  /test:
+  /users/{userId}/todos:
     get:
-      summary: "Runs a test request against the Identity Server demo API"
+      summary: 'Lists the users todos'
+      parameters:
+        - $ref: '#/components/parameters/userId'
       responses:
-        401:
-          description: "Unauthorized"
         200:
-          description: "OK"
+          description: 'List of todos'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+              examples:
+                ListTodosResponse:
+                  $ref: '#/components/examples/ListTodosResponse'
+        401:
+          description: 'Unauthorized'
+    post:
+      summary: 'Create new todo item'
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref:
+            example:
+              $ref: 
+      responses:
+        201:
+          description: 'List of todos'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+              examples:
+                ListTodosResponse:
+                  $ref: '#/components/examples/ListTodosResponse'
+        401:
+          description: 'Unauthorized'
+
+components:
+  parameters:
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+    todoId:
+      name: todoId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  schemas:
+    TodoBase:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        dueDate:
+            type: string
+      required:
+        - title
+        - dueDate
+    Todo:
+      allOf:
+        - $ref: '#/components/schemas/TodoBase'
+        - type: object
+          properties:
+            id:
+              type: string
+            creationDate:
+              type: string
+          required:
+            - id
+            - title
+            - creationDate
+            - dueDate
+  
+  examples:
+    GetTodoResponse:
+      value: &GetTodoResponse
+        id: 636a5fed17e22119f36801db
+        title: Wash dishes
+        description: Remember to wash the dishes before the guests arrive
+        dueDate: 2022-12-05T14:48:00.000Z
+        creatioinDate: 2022-12-01T14:48:00.000Z
+    ListTodosResponse:
+      value:
+        - *GetTodoResponse
