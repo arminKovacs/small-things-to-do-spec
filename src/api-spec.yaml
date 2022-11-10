@@ -23,8 +23,49 @@ paths:
               examples:
                 GetTodoResponse:
                   $ref: '#/components/examples/GetTodoResponse'
+        400:
+          description: 'System error message'
         403:
-          description: 'Trying to access other users todos'
+          description: 'Error message for forbidden action'
+    patch:
+      summary: 'Updates a specific todo item'
+      parameters:
+        - $ref: '#/components/parameters/todoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTodoItem.Body'
+            examples:
+              CreateTodoBody:
+                $ref: '#/components/examples/CreateTodoBody'
+      responses:
+        200:
+          description: 'Updated todo item'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+              examples:
+                GetTodoResponse:
+                  $ref: '#/components/examples/GetTodoResponse'
+        400:
+          description: 'System error message'
+        403:
+          description: 'Error message for forbidden action'
+    delete:
+      summary: 'Deletes a specific todo item'
+      parameters:
+        - $ref: '#/components/parameters/todoId'
+      responses:
+        204:
+          description: 'Simple message for successfull deletion'
+        400:
+          description: 'System error message'
+        403:
+          description: 'Error message for forbidden action'
+
 
   /users/{userId}/todos:
     get:
@@ -43,8 +84,10 @@ paths:
               examples:
                 ListTodosResponse:
                   $ref: '#/components/examples/ListTodosResponse'
+        400:
+          description: 'System error message'
         403:
-          description: 'Trying to access other users todos'
+          description: 'Error message for forbidden action'
     post:
       summary: 'Create new todo item'
       parameters:
@@ -69,7 +112,9 @@ paths:
                 GetTodoResponse:
                   $ref: '#/components/examples/GetTodoResponse'
         400:
-          description: 'General system error'
+          description: 'System error message'
+        403:
+          description: 'Error message for forbidden action'
 
 components:
   parameters:
@@ -120,7 +165,14 @@ components:
             - creationDate
             - dueDate
             - owner
-  
+    UpdateTodoItem.Body:
+      allOf:
+        - $ref: '#/components/schemas/Todo.Base'
+        - type: object
+          required:
+            anyOf:
+              - $ref: '#/components/schemas/Todo.Base'
+          
   examples:
     GetTodoResponse:
       value: &GetTodoResponse
