@@ -8,6 +8,24 @@ servers:
     description: 'Local host server for api'
 
 paths:
+  /users/{userId}/todos/{todoId}:
+    get:
+      summary: 'Return a single todo item'
+      parameters:
+        - $ref: '#/components/parameters/todoId'
+      responses:
+        200:
+          description: 'Todo item'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+              examples:
+                GetTodoResponse:
+                  $ref: '#/components/examples/GetTodoResponse'
+        403:
+          description: 'Trying to access other users todos'
+
   /users/{userId}/todos:
     get:
       summary: 'Lists the users todos'
@@ -25,8 +43,8 @@ paths:
               examples:
                 ListTodosResponse:
                   $ref: '#/components/examples/ListTodosResponse'
-        401:
-          description: 'Unauthorized'
+        403:
+          description: 'Trying to access other users todos'
     post:
       summary: 'Create new todo item'
       parameters:
@@ -36,23 +54,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref:
-            example:
-              $ref: 
+              $ref: '#/components/schemas/Todo.Base'
+            examples:
+              CreateTodoBody:
+                $ref: '#/components/examples/CreateTodoBody'
       responses:
         201:
-          description: 'List of todos'
+          description: 'Returns the created todo item'
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Todo'
+                $ref: '#/components/schemas/Todo'
               examples:
-                ListTodosResponse:
-                  $ref: '#/components/examples/ListTodosResponse'
-        401:
-          description: 'Unauthorized'
+                GetTodoResponse:
+                  $ref: '#/components/examples/GetTodoResponse'
+        400:
+          description: 'General system error'
 
 components:
   parameters:
@@ -70,13 +87,16 @@ components:
         type: string
 
   schemas:
-    TodoBase:
+    Todo.Base:
       type: object
       properties:
         title:
           type: string
+          minLength: 3
+          maxLength: 30
         description:
           type: string
+          maxLength: 300
         dueDate:
             type: string
       required:
@@ -84,18 +104,22 @@ components:
         - dueDate
     Todo:
       allOf:
-        - $ref: '#/components/schemas/TodoBase'
+        - $ref: '#/components/schemas/Todo.Base'
         - type: object
           properties:
             id:
               type: string
             creationDate:
               type: string
+            owner:
+              type: string
+              format: email
           required:
             - id
             - title
             - creationDate
             - dueDate
+            - owner
   
   examples:
     GetTodoResponse:
@@ -103,8 +127,15 @@ components:
         id: 636a5fed17e22119f36801db
         title: Wash dishes
         description: Remember to wash the dishes before the guests arrive
+        owner: johntest@email.com
         dueDate: 2022-12-05T14:48:00.000Z
         creatioinDate: 2022-12-01T14:48:00.000Z
     ListTodosResponse:
       value:
         - *GetTodoResponse
+    CreateTodoBody:
+      value:
+        title: Wash dishes
+        description: Remember to wash the dishes before the guests arrive
+        dueDate: 2022-12-05T14:48:00.000Z
+        
