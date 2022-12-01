@@ -8,9 +8,9 @@ servers:
     description: 'Local host server for api'
 
 paths:
-  /users/{userId}/todos/{todoId}:
+  /todos/{todoId}:
     get:
-      summary: 'Return a single todo item'
+      summary: 'Returns a single todo item'
       parameters:
         - $ref: '#/components/parameters/todoId'
       responses:
@@ -27,6 +27,8 @@ paths:
           description: 'System error message'
         403:
           description: 'Error message for forbidden action'
+        404:
+          description: 'Error message if todo item does not exist'
     patch:
       summary: 'Updates a specific todo item'
       parameters:
@@ -54,6 +56,8 @@ paths:
           description: 'System error message'
         403:
           description: 'Error message for forbidden action'
+        404:
+          description: 'Error message if todo item does not exist'
     delete:
       summary: 'Deletes a specific todo item'
       parameters:
@@ -65,13 +69,12 @@ paths:
           description: 'System error message'
         403:
           description: 'Error message for forbidden action'
+        404:
+          description: 'Error message if todo item does not exist'
 
-
-  /users/{userId}/todos:
+  /todos:
     get:
-      summary: 'Lists the users todos'
-      parameters:
-        - $ref: '#/components/parameters/userId'
+      summary: 'Lists the users todos. The user id is recovered from the jwt token'
       responses:
         200:
           description: 'List of todos'
@@ -90,8 +93,6 @@ paths:
           description: 'Error message for forbidden action'
     post:
       summary: 'Create new todo item'
-      parameters:
-        - $ref: '#/components/parameters/userId'
       requestBody:
         required: true
         content:
@@ -118,12 +119,6 @@ paths:
 
 components:
   parameters:
-    userId:
-      name: userId
-      in: path
-      required: true
-      schema:
-        type: string
     todoId:
       name: todoId
       in: path
@@ -132,7 +127,7 @@ components:
         type: string
 
   schemas:
-    Todo.Base:
+    Todo-base:
       type: object
       properties:
         title:
@@ -149,7 +144,7 @@ components:
         - dueDate
     Todo:
       allOf:
-        - $ref: '#/components/schemas/Todo.Base'
+        - $ref: '#/components/schemas/Todo-base'
         - type: object
           properties:
             id:
@@ -165,13 +160,13 @@ components:
             - creationDate
             - dueDate
             - owner
-    UpdateTodoItem.Body:
+    Todo-base.body:
       allOf:
-        - $ref: '#/components/schemas/Todo.Base'
+        - $ref: '#/components/schemas/Todo-base'
         - type: object
           required:
             anyOf:
-              - $ref: '#/components/schemas/Todo.Base'
+              - $ref: '#/components/schemas/Todo-base'
           
   examples:
     GetTodoResponse:
