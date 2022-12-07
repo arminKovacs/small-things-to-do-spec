@@ -38,7 +38,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateTodoItem.Body'
+              $ref: '#/components/schemas/Todo-base'
             examples:
               CreateTodoBody:
                 $ref: '#/components/examples/CreateTodoBody'
@@ -98,7 +98,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Todo.Base'
+              $ref: '#/components/schemas/Todo-base'
             examples:
               CreateTodoBody:
                 $ref: '#/components/examples/CreateTodoBody'
@@ -160,13 +160,6 @@ components:
             - creationDate
             - dueDate
             - owner
-    Todo-base.body:
-      allOf:
-        - $ref: '#/components/schemas/Todo-base'
-        - type: object
-          required:
-            anyOf:
-              - $ref: '#/components/schemas/Todo-base'
           
   examples:
     GetTodoResponse:
