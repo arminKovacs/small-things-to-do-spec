@@ -12,7 +12,7 @@ tags:
   - name: Authentication
     description: Endpoints for authentication management
   - name: Users
-    description: Endpoints for managing user data
+    description: Endpoints for managing user data *TBD*
 
 paths:
   /todos/{todoId}:
@@ -156,7 +156,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /auth/signup:
+  /signup:
     post:
       summary: 'Create a new user'
       tags:
@@ -185,7 +185,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /auth/signin:
+  /signin:
     post:
       summary: 'Signs in the user'
       security:
@@ -218,7 +218,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /auth/logout:
+  /logout:
     get:
       summary: 'Logs the user out and deletes the user refresh token from the database'
       security:
@@ -233,7 +233,7 @@ paths:
         500:
           $ref: '#/components/responses/InternalError'
 
-  /auth/refresh:
+  /refresh:
     get:
       summary: 'Refreshes the user tokens when called for user in tokens data'
       security:
