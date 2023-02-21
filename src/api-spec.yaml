@@ -6,11 +6,22 @@ info:
 servers:
   - url: 'https://localhost:3001/api'
     description: 'Local host server for api'
+tags:
+  - name: Todos
+    description: Endpoints for managing and returning todo items
+  - name: Authentication
+    description: Endpoints for authentication management
+  - name: Users
+    description: Endpoints for managing user data
 
 paths:
   /todos/{todoId}:
     get:
       summary: 'Returns a single todo item'
+      tags:
+        - Todos
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/todoId'
       responses:
@@ -24,13 +35,19 @@ paths:
                 GetTodoResponse:
                   $ref: '#/components/examples/GetTodoResponse'
         400:
-          description: 'System error message'
-        403:
-          description: 'Error message for forbidden action'
+            $ref: '#/components/responses/BadRequestError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: 'Error message if todo item does not exist'
+        500:
+          $ref: '#/components/responses/InternalError'
     patch:
       summary: 'Updates a specific todo item'
+      tags:
+        - Todos
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/todoId'
       requestBody:
@@ -53,28 +70,42 @@ paths:
                 GetTodoResponse:
                   $ref: '#/components/examples/GetTodoResponse'
         400:
-          description: 'System error message'
-        403:
-          description: 'Error message for forbidden action'
+            $ref: '#/components/responses/BadRequestError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: 'Error message if todo item does not exist'
+        409:
+          $ref: '#/components/responses/ConflictError'
+        500:
+          $ref: '#/components/responses/InternalError'
     delete:
       summary: 'Deletes a specific todo item'
+      tags:
+        - Todos
+      security:
+        - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/todoId'
       responses:
         204:
           description: 'Simple message for successfull deletion'
         400:
-          description: 'System error message'
-        403:
-          description: 'Error message for forbidden action'
+            $ref: '#/components/responses/BadRequestError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
         404:
           description: 'Error message if todo item does not exist'
+        500:
+          $ref: '#/components/responses/InternalError'
 
   /todos:
     get:
       summary: 'Lists the users todos. The user id is recovered from the jwt token'
+      security:
+        - bearerAuth: []
+      tags:
+        - Todos
       responses:
         200:
           description: 'List of todos'
@@ -87,12 +118,16 @@ paths:
               examples:
                 ListTodosResponse:
                   $ref: '#/components/examples/ListTodosResponse'
-        400:
-          description: 'System error message'
-        403:
-          description: 'Error message for forbidden action'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        500:
+          $ref: '#/components/responses/InternalError'
     post:
       summary: 'Create new todo item'
+      security:
+        - bearerAuth: []
+      tags:
+        - Todos
       requestBody:
         required: true
         content:
@@ -113,11 +148,126 @@ paths:
                 GetTodoResponse:
                   $ref: '#/components/examples/GetTodoResponse'
         400:
-          description: 'System error message'
+            $ref: '#/components/responses/BadRequestError'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+        409:
+          $ref: '#/components/responses/ConflictError'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /auth/signup:
+    post:
+      summary: 'Create a new user'
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User-base'
+            examples:
+              CreateUserBody:
+                $ref: '#/components/examples/CreateUserBody'
+      responses:
+        201:
+          description: 'Returns the created JWT tokens for the user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokensResponse'
+              examples:
+                GetTodoResponse:
+                  $ref: '#/components/examples/TokensResponse'
+        400:
+          $ref: '#/components/responses/BadRequestError'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /auth/signin:
+    post:
+      summary: 'Signs in the user'
+      security:
+        - bearerAuth: []
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User-base'
+            examples:
+              CreateUserBody:
+                $ref: '#/components/examples/CreateUserBody'
+      responses:
+        200:
+          description: 'Returns JWT tokens for the user'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokensResponse'
+              examples:
+                GetTodoResponse:
+                  $ref: '#/components/examples/TokensResponse'
+        404:
+          description: 'Error message if user does not exist'
+        400:
+          $ref: '#/components/responses/BadRequestError'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /auth/logout:
+    get:
+      summary: 'Logs the user out and deletes the user refresh token from the database'
+      security:
+        - bearerAuth: []
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: 'Returns a success message'
+        404:
+          description: 'Error message if user is not found'
+        500:
+          $ref: '#/components/responses/InternalError'
+
+  /auth/refresh:
+    get:
+      summary: 'Refreshes the user tokens when called for user in tokens data'
+      security:
+        - refreshAuth: []
+      tags:
+        - Authentication
+      responses:
+        200:
+          description: 'Returns new access and refresh tokens'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokensResponse'
+              examples:
+                GetTodoResponse:
+                  $ref: '#/components/examples/TokensResponse'
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
         403:
-          description: 'Error message for forbidden action'
+          description: 'Forbidden error on refresh token or user validation issue'
+        500:
+          $ref: '#/components/responses/InternalError'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    refreshAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   parameters:
     todoId:
       name: todoId
@@ -142,6 +292,17 @@ components:
       required:
         - title
         - dueDate
+    User-base:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          maxLength: 50
+      required:
+        - username
+        - password
     Todo:
       allOf:
         - $ref: '#/components/schemas/Todo-base'
@@ -160,7 +321,40 @@ components:
             - creationDate
             - dueDate
             - owner
-          
+    User:
+      allOf:
+        - $ref: '#/components/schemas/User-base'
+        - type: object
+          properties:
+            id:
+              type: string
+            refreshToken:
+              type: string
+          required:
+            - id
+            - username
+            - password
+            - refreshToken
+    TokensResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token for authentication
+        refresh_token:
+          type: string
+          description: JWT refresh token for refreshing authentication token because of quick expiration time
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    InternalError:
+      description: Internal server error. Usually Mongo database error
+    ConflictError:
+      description: Server error from conflict. Item already created with this title or due date before creation date
+    BadRequestError:
+      description: Created data already exists (user or todo) or schema validation failed for request
+
   examples:
     GetTodoResponse:
       value: &GetTodoResponse
@@ -170,6 +364,10 @@ components:
         owner: johntest@email.com
         dueDate: 2022-12-05T14:48:00.000Z
         creatioinDate: 2022-12-01T14:48:00.000Z
+    TokensResponse:
+      value: &TokensResponse
+        access_token: jwt.access.token
+        refresh_token: jwt.refresh.token
     ListTodosResponse:
       value:
         - *GetTodoResponse
@@ -177,5 +375,9 @@ components:
       value:
         title: Wash dishes
         description: Remember to wash the dishes before the guests arrive
-        dueDate: 2022-12-05T14:48:00.000Z
+        dueDate: 2022-12-05T14:48:00.000Z    
+    CreateUserBody:
+      value:
+        username: test@email.com
+        password: pa$$w0rd
         
