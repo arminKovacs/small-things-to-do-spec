@@ -211,8 +211,6 @@ paths:
               examples:
                 GetTodoResponse:
                   $ref: '#/components/examples/TokensResponse'
-        404:
-          description: 'Error message if user does not exist'
         400:
           $ref: '#/components/responses/BadRequestError'
         500:
